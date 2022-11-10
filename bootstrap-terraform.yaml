@@ -20,7 +20,6 @@ Resources:
         Status: Enabled
 
   TerraformStatePolicy:
-    DependsOn: [ TerraformStateBucket ]
     Type: AWS::S3::BucketPolicy
     Properties:
       Bucket: !Ref TerraformStateBucket
