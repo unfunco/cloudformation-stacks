@@ -30,3 +30,4 @@ jobs:
         setopt -s globstar
         cfn-lint --version
         cfn-lint -t ./*.yaml
+      shell: /usr/bin/zsh{0}
