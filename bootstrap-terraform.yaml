@@ -1,0 +1,66 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Terraform S3 state bucket and DynamoDB state lock table.
+
+Resources:
+  TerraformStateBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: Private
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+        - ServerSideEncryptionByDefault:
+            SSEAlgorithm: AES256
+      BucketName: !Sub terraform-state-${AWS::AccountId}
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+
+  TerraformStatePolicy:
+    DependsOn: [ TerraformStateBucket ]
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref TerraformStateBucket
+      PolicyDocument:
+        Statement:
+        - Action: s3:DeleteObject
+          Effect: Deny
+          Principal: "*"
+          Resource: !Sub arn:aws:s3:::${TerraformStateBucket}/*
+          Sid: DenyDeleteTerraformState
+
+  TerraformLocksTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: LockID
+        AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+      - AttributeName: LockID
+        KeyType: HASH
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+      TableName: terraform-locks
+
+Outputs:
+  TerraformLocksTableArn:
+    Description: ARN of the DynamoDB table used for locking Terraform state.
+    Value: !GetAtt TerraformLocksTable.Arn
+
+  TerraformLocksTableName:
+    Description: Name of the DynamoDB table used for locking Terraform state.
+    Value: !Ref TerraformLocksTable
+
+  TerraformStateBucketArn:
+    Description: ARN of the S3 bucket used to store Terraform state.
+    Value: !GetAtt TerraformStateBucket.Arn
+
+  TerraformStateBucketName:
+    Description: Name of the S3 bucket used to store Terraform state.
+    Value: !Ref TerraformStateBucket
