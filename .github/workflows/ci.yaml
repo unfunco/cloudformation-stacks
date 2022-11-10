@@ -27,7 +27,6 @@ jobs:
       uses: scottbrenner/cfn-lint-action@v2
     - name: Lint the CloudFormation stacks
       run: |
-        setopt -s globstar
+        shopt -s globstar
         cfn-lint --version
         cfn-lint -t ./*.yaml
-      shell: /usr/bin/zsh{0}
