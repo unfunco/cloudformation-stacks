@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+    - main
+    paths-ignore:
+    - .editorconfig
+    - .gitignore
+    - README.md
+  push:
+    branches:
+    - main
+    paths-ignore:
+    - .editorconfig
+    - .gitignore
+    - README.md
+
+jobs:
+  verify:
+    name: Verify
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    - name: Setup the CloudFormation linter
+      uses: scottbrenner/cfn-lint-action@v2
+    - name: Lint the CloudFormation stacks
+      run: |
+        setopt -s globstar
+        cfn-lint --version
+        cfn-lint -t ./*.yaml
