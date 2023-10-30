@@ -1,7 +1,31 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Terraform S3 state bucket and DynamoDB state lock table.
+Description: Bootstraps the resources required by Terraform.
 
 Resources:
+  TerraformResourcesKMSKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: KMS key used to encrypt/decrypt Terraform state.
+      Enabled: true
+      EnableKeyRotation: true
+      KeyPolicy:
+        Statement:
+        - Action: 'kms:*'
+          Effect: Allow
+          Principal:
+            AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+          Resource: '*'
+        Version: 2012-10-17
+      KeySpec: SYMMETRIC_DEFAULT
+      KeyUsage: ENCRYPT_DECRYPT
+      MultiRegion: false
+
+  TerraformResourcesKMSKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: alias/terraform-resources
+      TargetKeyId: !Ref TerraformResourcesKMSKey
+
   TerraformStateBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -9,7 +33,8 @@ Resources:
       BucketEncryption:
         ServerSideEncryptionConfiguration:
         - ServerSideEncryptionByDefault:
-            SSEAlgorithm: AES256
+            KMSMasterKeyID: !Ref TerraformResourcesKMSKey
+            SSEAlgorithm: 'aws:kms'
       BucketName: !Sub terraform-state-${AWS::AccountId}
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
@@ -19,7 +44,8 @@ Resources:
       VersioningConfiguration:
         Status: Enabled
 
-  TerraformStatePolicy:
+  TerraformStateBucketPolicy:
+    DependsOn: [ TerraformStateBucket ]
     Type: AWS::S3::BucketPolicy
     Properties:
       Bucket: !Ref TerraformStateBucket
@@ -38,13 +64,16 @@ Resources:
       - AttributeName: LockID
         AttributeType: S
       BillingMode: PAY_PER_REQUEST
+      DeletionProtectionEnabled: true
       KeySchema:
       - AttributeName: LockID
         KeyType: HASH
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
       SSESpecification:
+        KMSMasterKeyId: !Ref TerraformResourcesKMSKey
         SSEEnabled: true
+        SSEType: KMS
       TableName: terraform-locks
 
 Outputs:
@@ -55,6 +84,10 @@ Outputs:
   TerraformLocksTableName:
     Description: Name of the DynamoDB table used for locking Terraform state.
     Value: !Ref TerraformLocksTable
+
+  TerraformResourcesKMSKeyArn:
+    Description: ARN of the KMS key used to encrypt/decrypt Terraform state.
+    Value: !GetAtt TerraformResourcesKMSKey.Arn
 
   TerraformStateBucketArn:
     Description: ARN of the S3 bucket used to store Terraform state.
