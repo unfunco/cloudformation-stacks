@@ -29,7 +29,6 @@ Resources:
   TerraformStateBucket:
     Type: AWS::S3::Bucket
     Properties:
-      AccessControl: Private
       BucketEncryption:
         ServerSideEncryptionConfiguration:
         - ServerSideEncryptionByDefault:
@@ -45,7 +44,6 @@ Resources:
         Status: Enabled
 
   TerraformStateBucketPolicy:
-    DependsOn: [ TerraformStateBucket ]
     Type: AWS::S3::BucketPolicy
     Properties:
       Bucket: !Ref TerraformStateBucket
