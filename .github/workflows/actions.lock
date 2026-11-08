@@ -6,6 +6,7 @@ workflows:
     '.github/workflows/ci.yaml':
         - 'actions/checkout@v3.7.0'
         - 'scottbrenner/cfn-lint-action@v2.4.9'
+    '.github/workflows/pr_label.yaml': []
 dependencies:
     'actions/checkout@v3.7.0':
         ref: 'v3.7.0'
