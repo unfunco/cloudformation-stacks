@@ -5,7 +5,7 @@ version: 'v0.0.3'
 workflows:
     '.github/workflows/ci.yaml':
         - 'actions/checkout@v3.7.0'
-        - 'scottbrenner/cfn-lint-action@v2.4.9'
+        - 'scottbrenner/cfn-lint-action@v2.8.0'
     '.github/workflows/pr_label.yaml': []
 dependencies:
     'actions/checkout@v3.7.0':
@@ -13,8 +13,8 @@ dependencies:
         commit: 'sha1-a37ce9120846195fa4ece8f58b268e6043cb2f26'
         owner_id: 44036562
         repo_id: 197814629
-    'scottbrenner/cfn-lint-action@v2.4.9':
-        ref: 'v2.4.9'
-        commit: 'sha1-be676baed6db1a0d44f2f3ea59554623dc5b4109'
+    'scottbrenner/cfn-lint-action@v2.8.0':
+        ref: 'v2.8.0'
+        commit: 'sha1-8affffc34dddd6937bbc37f60901f71657e20fab'
         owner_id: 416477
         repo_id: 199763900
